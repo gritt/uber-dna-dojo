@@ -1,5 +1,6 @@
 <?php
 
+
 /**
  * Class DNA
  * @author Gilvan Ritter <gilvanritter@gmail.com>
@@ -102,46 +103,48 @@ class DNAFinder
             /** @var string $gene : ACT | CGT | AGT */
             $gene = $genePermutation[0];
 
-            /** @var array $indexesToStartSearches */
-            $indexesToStartSearches = $this->findGeneIndexesOccurrences($gene);
+            /** @var array $firstGeneIndexes */
+            $firstGeneIndexes = $this->findFirstGeneIndexes($gene);
 
-            if (empty($indexesToStartSearches)) {
+            if (empty($firstGeneIndexes)) {
                 continue;
             }
 
-            foreach ($indexesToStartSearches as $searchIndex) {
+            foreach ($firstGeneIndexes as $indexToStartSearch) {
 
-                $remainingGenesToFind = [
+                $remainingGenes = [
                     $genePermutation[1],
                     $genePermutation[2],
                 ];
 
-                $indexForSearchResults = implode('', $genePermutation);
-
                 /** @var string $path */
-                $path = $this->searchFromIndexTillFindPath($searchIndex, $remainingGenesToFind);
+                $path = $this->searchRemainingGenesFromIndex($indexToStartSearch, $remainingGenes);
 
                 if ($path) {
-                    $searchResults[$indexForSearchResults]['path_from_index'][$searchIndex] = $path;
+                    $searchResults[] = $path;
                 }
             }
         }
 
-        var_dump($searchResults);
-        die;
+        if (!empty($searchResults)) {
+            $sortedResults = $this->sortResultsByLength($searchResults);
+            return $sortedResults[0];
+        }
+
+        return '';
     }
 
     /**
      * @param $gene
      * @return array
      */
-    private function findGeneIndexesOccurrences($gene)
+    private function findFirstGeneIndexes($gene)
     {
         /** @var $dnaArray */
         $dnaArray = $this->dnaArray;
 
-        /** @var  $indexesOccurrences */
-        $indexesOccurrences = [];
+        /** @var  $firstGeneIndexes */
+        $firstGeneIndexes = [];
 
         for ($i = 0; $i <= $this->dna->getSize(); $i++) {
 
@@ -153,12 +156,12 @@ class DNAFinder
             $comparableGene = $dnaArray[$i] . $dnaArray[$i + 1] . $dnaArray[$i + 2];
 
             if ($comparableGene == $gene) {
-                $indexesOccurrences[] = $i;
+                $firstGeneIndexes[] = $i;
                 $i += 2;
             }
         }
 
-        return $indexesOccurrences;
+        return $firstGeneIndexes;
     }
 
     /**
@@ -166,7 +169,7 @@ class DNAFinder
      * @param $genesArray
      * @return bool|string
      */
-    private function searchFromIndexTillFindPath($index, $genesArray)
+    private function searchRemainingGenesFromIndex($index, $genesArray)
     {
         $dnaArray = $this->dnaArray;
 
@@ -226,33 +229,23 @@ class DNAFinder
         // Means it has not found both genes in the sequence of indexes
         return false;
     }
+
+    /**
+     * @param $searchResults
+     * @return mixed
+     */
+    private function sortResultsByLength($searchResults)
+    {
+        usort($searchResults, function ($a,$b){
+            return strlen($a)-strlen($b);
+        });
+
+        return $searchResults;
+    }
 }
-
-// How it works
-
-// Will loop through the dna array
-
-// Each permutation, and each match of the first gene (ACT | CGT | AGT)
-// will result in a new search instance,
-// which will loop through the dnsArray from the index that the first match happened till the end
-// searching for the remaining two genes
-
-// The asymptotic notation for this algorithm is presented below,
-// the performance could probably be improved using more modern algorithms
-
-
-// Result:
-// ..................CGT...AGT............ACT
-
-// TTTCGTTTTCGTTTTAGTCGTTTTAGTTTTTTTAGTTTTACTTTTACTTTTACTTTTCGTACT (dna string)
-// ...4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,39.....................
-// ........10..............................33.....................
-// .................19.....................24.....................
-// ........................................................58.....
 
 
 try {
-
     // From standard input
     $handle = fopen("php://stdin", "r");
     $code = trim(fgets($handle));
@@ -272,9 +265,5 @@ try {
     print $shortestPiece . PHP_EOL;
 
 } catch (Exception $ex) {
-
-    var_dump('ERROR');
-    var_dump($ex->getLine());
-    var_dump($ex->getMessage());
-    die;
+    print '';
 }
