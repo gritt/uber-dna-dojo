@@ -1,55 +1,59 @@
 <?php
 
 /**
- * Date: 04/06/17
- * Time: 15:19
+ * Class DNA
+ * @author Gilvan Ritter <gilvanritter@gmail.com>
  */
-
-/*
- *
- * each match of the first gene, will create a new search with the rest of array
- *
-CGT[n]AGT[n]ACT
-TTTCGTTTTCGTTTTAGTCGTTTTAGTTTTTTTAGTTTTACTTTTACTTTTACTTTTCGTACT
-...4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,39.....................
-........10..............................33.....................
-.................19.....................24.....................
-........................................................58.....
- *
- */
-
-function get_gene_index_in_array($gene, $dnaArray)
+class DNA
 {
-    $dnaArraySize = count($dnaArray);
+    /** @var string */
+    private $code;
 
-    $searches = [];
 
-    for ($i = 0; $i <= $dnaArraySize; $i++) {
-
-        if (!isset($dnaArray[$i + 2])) {
-            $i++;
-            continue;
+    /**
+     * DNA constructor.
+     * @param string $code
+     */
+    public function __construct(string $code)
+    {
+        if ($this->isValidDNA($code)) {
+            $this->code = $code;
         }
-
-        $dnaString = $dnaArray[$i] . $dnaArray[$i + 1] . $dnaArray[$i + 2];
-
-        if ($dnaString == $gene) {
-
-            $searches['index'] = $i;
-
-            $i = $i + 3;
-            continue;
-        }
-        $i++;
-        continue;
     }
 
-    return $searches;
+    /**
+     * @return string
+     */
+    public function getCode()
+    {
+        return $this->code;
+    }
+
+    /**
+     * @param $code
+     * @return bool
+     * @throws Exception
+     */
+    private function isValidDNA($code)
+    {
+        if (strlen($code) < 6) {
+            throw new Exception('Error: DNA code has less than 6 nucleobases');
+        }
+        return true;
+    }
 }
 
-function find_genes($dna)
+/**
+ * Class DNAFinder
+ * @author Gilvan Ritter <gilvanritter@gmail.com>
+ */
+class DNAFinder
 {
-    $genePermutations = [
+    /** @var  DNA */
+    private $dna;
+
+    /** @var array */
+    private $genePermnutations = [
         ['ACT', 'CGT', 'AGT'],
         ['ACT', 'AGT', 'CGT'],
         ['AGT', 'ACT', 'CGT'],
@@ -58,93 +62,65 @@ function find_genes($dna)
         ['CGT', 'ACT', 'AGT'],
     ];
 
-    $dnaArray = str_split($dna, 1);
-    $dnaArraySize = count($dnaArray);
-    $searches = [];
 
-
-    // $permutation = ['CGT','AGT','ACT'],
-    foreach ($genePermutations as $genePermutation) {
-
-        // $gene = 'CGT'
-        $gene = $genePermutation[0];
-        $sequence = $genePermutation[1];
-        $match = $genePermutation[2];
-
-        $geneSearches = get_gene_index_in_array($gene, $dnaArray);
-
-        if (empty($geneSearches)) {
-            print "" . PHP_EOL;
-            return;
-        }
-
-        // TTTCGTTTTCGTTTTAGTCGTTTTAGTTTTTTTAGTTTTACTTTTACTTTTACTTTTCGTACT
-        // $searches[0][index] = 4  + 3
-        // $searches[1][index] = 10 + 3
-        // $searches[2][index] = 19 + 3
-        // $searches[3][index] = 58 + 3
-
-        $searchIndex = 0;
-        foreach ($geneSearches as $search) {
-
-            // search started in index
-            // search ended on index
-            // diff between end and start = implode piece from array
-            $searchStartAt = $search['index'] + 3;
-
-
-
-        }
+    /**
+     * DNAFinder constructor.
+     * @param DNA $dna
+     */
+    public function __construct(DNA $dna)
+    {
+        $this->dna = $dna;
     }
 
-//    $genePermutationsSize = count($genePermutations);
-    // $genePermutation = ['CGT','AGT','ACT'],
-//    for ($genePermutationIndex = 0; $genePermutationIndex <= $genePermutationsSize; $genePermutationIndex++) {
-//
-//        $genePermutation = $genePermutations[$genePermutationsSize];
-////    foreach ($genePermutations as $genePermutation) {
-//
+    public function findShortestPiece()
+    {
+        var_dump($this->dna->getCode());
 
-//        foreach ($genePermutation as $gene) {
-//
-//            for ($i = 0; $i <= $dnaArraySize; $i++) {
-//
-//                if (!isset($dnaArray[$i + 2])) {
-//                    $i++;
-//                    continue;
-//                }
-//
-//                $dnaString = $dnaArray[$i] . $dnaArray[$i + 1] . $dnaArray[$i + 2];
-//
-//                if ($dnaString == $gene) {
-//                    $searches[$gene][]['index'] = $i;
-//
-//                    $i = $i + 3;
-//                    continue;
-//
-//                    // found CGT three times will lead to three searches for cgt.next starting at
-
-//                }
-//
-//                $i++;
-//                continue;
-//            }
-//
-//            //$nextGene =;
-//            foreach ($searches[$gene] as $search => $searchKeyIndex) {
-//
-//
-//            }
-////        }
-//        }
-//    }
+        die;
+    }
 }
 
+// How it works
 
-$handle = fopen("php://stdin", "r");
+// Will loop through the dna array
 
-$dna = fgets($handle);
+// For each permutation, each match of the first gene (ACT | CGT | AGT)
+// will create a new search instance, which will loop from the instance index till the end
 
-find_genes($dna);
+// The asymptotic notation for this algorithm is presented below, and
+// the performance can be improved using more modern algorithms
 
-fclose($handle);
+
+// Result:
+// ..................CGT...AGT............ACT
+
+// TTTCGTTTTCGTTTTAGTCGTTTTAGTTTTTTTAGTTTTACTTTTACTTTTACTTTTCGTACT (dna string)
+// ...4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,39.....................
+// ........10..............................33.....................
+// .................19.....................24.....................
+// ........................................................58.....
+
+
+try {
+
+    // Read from standard IO
+    $handle = fopen("php://stdin", "r");
+    $code = trim(fgets($handle));
+    fclose($handle);
+
+
+    /** @var DNA $dna */
+    $dna = new DNA($code);
+
+    /** @var DNAFinder $dnaFinder */
+    $dnaFinder = new DNAFinder($dna);
+
+    print $shortestPiece = $dnaFinder->findShortestPiece();
+
+} catch (Exception $ex) {
+
+    var_dump('ERROR');
+    var_dump($ex->getLine());
+    var_dump($ex->getMessage());
+    die;
+}
