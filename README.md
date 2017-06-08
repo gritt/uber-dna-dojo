@@ -19,13 +19,20 @@ Example 02:
 
     2. For each different permutation
 
-    2.1. It will get the first gene, and will search in the array for occurrences of that gene, it's going to return the index that the gene was found. 
-    
-    2.2. For each result of the last search, a new search against the DNA array will happen, starting already from the index that the first gene was found, this search will look for the remaining two genes, in any order. Each iteration incrementes the shortest piece path.
-    
-    2.3. When both genes are found, for all searches, the pathes will be added to an array of results, so that we can compare how the different permudations performed on their searches, with a different permutation we might have a shorter path.
-
-    3. The array of results is sorter by length, and we print the first index, which is the shortest one found;
+    2.1. It will get the first gene, and will search in the array for occurrences of that gene, 
+    it's going to return the index that the gene was found.
+     
+    2.2. For each result of the last search, a new search against the DNA array will happen, 
+    starting already from the index that the first gene was found, 
+    this search will look for the remaining two genes, in any order. 
+    Each iteration increments the shortest piece path.
+        
+    2.3. When both genes are found, for all searches, the pathes will be added to an array 
+    of results, so that we can compare how the different permudations performed on their searches, 
+    with a different permutation we might have a shorter path.
+        
+    3. The array of results is sorter by length, and we print the first index, 
+    which is the shortest one found;
 
 
 ## Graphical representation
