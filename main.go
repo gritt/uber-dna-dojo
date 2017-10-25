@@ -17,25 +17,27 @@ import (
  */
 
 type dna []string
-type permutation []string
+type genePermutations []string
+type results []string
 
 func main() {
-	ds := newDNAFromFile()
-	fmt.Println(ds)
-
-	// ['ACT', 'CGT', 'AGT']
-	// ['AGT', 'CGT', 'ACT']
-	// ['CGT', 'ACT', 'AGT']
-	gp := map[string]permutation{
-		"ACT": permutation{"CGT", "AGT"},
-		"AGT": permutation{"CGT", "AGT"},
-		"CGT": permutation{"ACT", "AGT"},
+	//DNA slice
+	ds := dnaFromFile()
+	// Genes map with their permutations
+	gm := map[string]genePermutations{
+		"ACT": genePermutations{"CGT", "AGT"},
+		"AGT": genePermutations{"CGT", "AGT"},
+		"CGT": genePermutations{"ACT", "AGT"},
 	}
-	fmt.Println(gp)
-
+	ds.findShortestOccurence(gm)
 }
 
-func newDNAFromFile() dna {
+func (ds dna) findShortestOccurence(gm map[string]genePermutations) {
+	fmt.Println(gm)
+	fmt.Println(ds)
+}
+
+func dnaFromFile() dna {
 	bs, err := ioutil.ReadFile(os.Args[1])
 	if err != nil {
 		fmt.Println("Error:", err)
