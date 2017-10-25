@@ -21,14 +21,17 @@ type genePermutations []string
 type results []string
 
 func main() {
+
 	// DNA slice
 	ds := dnaFromFile()
+
 	// Genes map with their permutations
 	gm := map[string]genePermutations{
 		"ACT": genePermutations{"CGT", "AGT"},
 		"AGT": genePermutations{"CGT", "AGT"},
 		"CGT": genePermutations{"ACT", "AGT"},
 	}
+
 	ds.findShortestOccurence(gm)
 }
 
@@ -43,27 +46,46 @@ func (ds dna) findShortestOccurence(gm map[string]genePermutations) {
 		//with the index got from the channel, and with this first gene(fg)
 
 		fmt.Println("permutations of gene", fg, "are", gps)
+
+		ch := make(chan int)
+
+		go ds.findGeneOccurenceIndexes(fg, ch)
+
+		i := <-ch
+
+		fmt.Println("found gene", fg, "at index", i)
 	}
 
 	// fmt.Println(gm)
 	// fmt.Println(ds)
 }
 
-func (ds dna) findGeneOccurenceIndexes(g string) {
+func (ds dna) findGeneOccurenceIndexes(g string, ch chan int) {
 
-	dl := len(ds)
-	for i := 0; i < len(ds); i++ {
-		// Not further than the DNA length
-		if (i + 2) > dl {
+	// DNA length
+	dsl := len(ds)
+
+	for i := 0; i < dsl; i++ {
+
+		if (i + 2) >= dsl {
+			i++
 			continue
 		}
 
-		// todo
-		// found?
-		// communicate through channel the index which was found
-		// start subsequences search from there witht the permutations
+		cgs := string(ds[i] + ds[i+1] + ds[i+2])
+		if cgs == g {
 
-		print(i)
+			ch <- i
+
+			// todo
+			// found?
+			// communicate through channel the index which was found
+			// start subsequences search from there witht the permutations
+
+			i += 2
+		}
+		// fmt.Println(i)
+		// fmt.Println(gs)
 	}
 }
 
