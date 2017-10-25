@@ -21,7 +21,7 @@ type genePermutations []string
 type results []string
 
 func main() {
-	//DNA slice
+	// DNA slice
 	ds := dnaFromFile()
 	// Genes map with their permutations
 	gm := map[string]genePermutations{
@@ -33,8 +33,38 @@ func main() {
 }
 
 func (ds dna) findShortestOccurence(gm map[string]genePermutations) {
-	fmt.Println(gm)
-	fmt.Println(ds)
+
+	for fg, gps := range gm {
+
+		//todo
+		//channels
+		//findGeneOccurenceIndexes
+		//when receives a result, start new routine for the subsequences search
+		//with the index got from the channel, and with this first gene(fg)
+
+		fmt.Println("permutations of gene", fg, "are", gps)
+	}
+
+	// fmt.Println(gm)
+	// fmt.Println(ds)
+}
+
+func (ds dna) findGeneOccurenceIndexes(g string) {
+
+	dl := len(ds)
+	for i := 0; i < len(ds); i++ {
+		// Not further than the DNA length
+		if (i + 2) > dl {
+			continue
+		}
+
+		// todo
+		// found?
+		// communicate through channel the index which was found
+		// start subsequences search from there witht the permutations
+
+		print(i)
+	}
 }
 
 func dnaFromFile() dna {
