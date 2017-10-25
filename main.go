@@ -17,10 +17,22 @@ import (
  */
 
 type dna []string
+type permutation []string
 
 func main() {
 	ds := newDNAFromFile()
 	fmt.Println(ds)
+
+	// ['ACT', 'CGT', 'AGT']
+	// ['AGT', 'CGT', 'ACT']
+	// ['CGT', 'ACT', 'AGT']
+	gp := map[string]permutation{
+		"ACT": permutation{"CGT", "AGT"},
+		"AGT": permutation{"CGT", "AGT"},
+		"CGT": permutation{"ACT", "AGT"},
+	}
+	fmt.Println(gp)
+
 }
 
 func newDNAFromFile() dna {
@@ -30,5 +42,10 @@ func newDNAFromFile() dna {
 		os.Exit(1)
 	}
 	s := strings.Split(string(bs), "")
+
+	if len(s) < 6 {
+		os.Exit(1)
+	}
+
 	return dna(s)
 }
