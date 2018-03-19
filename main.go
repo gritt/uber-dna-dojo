@@ -5,16 +5,8 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+	"sort"
 )
-
-/*
- * [v] load file into string slice
- * [ ] loop through DNA slice
- * [ ] for each permutation (gene) found point
- * [ ] find subsequences from the gene point till end/complete the DNA
- * [ ] compare matching subsequences sizes
- * [ ] choose the smaller :)
- */
 
 type dna []string
 type genePermutations []string
@@ -34,10 +26,14 @@ func main() {
 	gm := map[string]genePermutations{
 		"ACT": genePermutations{"CGT", "AGT"},
 		"AGT": genePermutations{"CGT", "AGT"},
-		"CGT": genePermutations{"ACT", "AGT"},
+		"CGT": genePermutations{"CGT", "AGT"},
 	}
 
-	ds.findShortestOccurrence(gm)
+	// find shortest piece of matching genes
+	rs := ds.findShortestOccurrence(gm)
+
+	// result string
+	fmt.Println(rs)
 }
 
 func getDNAFromFile() dna {
@@ -60,58 +56,78 @@ func (ds dna) isValid() bool {
 	return  true
 }
 
-func (ds dna) findShortestOccurrence(gpm map[string]genePermutations) {
+func (ds dna) findShortestOccurrence(gpm map[string]genePermutations) string {
 
-	// g := ACT or AGT or CGT
-	for g, gps := range gpm {
+	// to store results
+	var rsl []string
 
-		//findGeneOccurrenceIndexes
-		//when receives a result, start new routine for the subsequences search
-		//with the index got from the channel, and with this first gene(g)
-
-		fmt.Println("permutations of gene", g, "are", gps)
+	// gs : ACT|AGT|CGT
+	// gpsl : {"CGT", "AGT"},{"CGT", "AGT"},{"CGT", "AGT"}
+	for gs, gpsl := range gpm {
 
 		// TODO: a channel to transport integers
 		//ch := make(chan int)
 
-		// TODO: run search in a new thread
-		//go ds.findGeneOccurrenceIndexesConcurrent(g, ch)
+		// TODO: run search in a new routine
+		//go ds.findGeneOccurrenceIndexesConcurrent(gs, ch)
 
 		// TODO: listen for indexes, start a new search by the current gene from there
 		//i := <-ch
-		//fmt.Println("found gene", g, "at index", i)
 
-		//idxs := ds.findGeneOccurrenceIndexes(g)
-		//fmt.Println("indexes with permutation", g, ":", idxs)
+		isl := ds.findGeneOccurrenceIndexes(gs)
 
+		if len(isl) == 0 {
+			continue
+		}
+
+		for _, i := range isl {
+
+			ps := ds.findRemainingGenesFromIndex(i, gpsl)
+
+			if ps != "false" {
+				rsl = append(rsl, ps)
+			}
+		}
 	}
+
+	fmt.Println(rsl)
+
+	//if len(rsl) > 0 {
+	//	sort.Strings(rsl)
+	//	return rsl[0]
+	//}
+
+	return ""
+
 }
 
 func (ds dna) findGeneOccurrenceIndexes(g string) []int {
 
 	// dna length
-	dsl := len(ds)
+	l := len(ds)
 
-	var idxs []int
+	// indexes slice
+	var isl []int
 
-	for i := 0; i < dsl; i++ {
+	for i := 0; i < l; i++ {
 
-		if (i + 2) >= dsl {
+		if (i + 2) >= l {
 			i++
 			continue
 		}
 
+		// compare found nucleobase string with given nucleobase
 		cgs := string(ds[i] + ds[i+1] + ds[i+2])
 		if cgs == g {
 
-			// slice of all indexes with matches
-			idxs = append(idxs, i)
+			// append match index to slice of results
+			isl = append(isl, i)
 
 			i += 2
 		}
 	}
 
-	return idxs
+	return isl
 }
 
 func (ds dna) findGeneOccurrenceIndexesConcurrent(g string, ch chan int) {
@@ -129,15 +145,77 @@ func (ds dna) findGeneOccurrenceIndexesConcurrent(g string, ch chan int) {
 		cgs := string(ds[i] + ds[i+1] + ds[i+2])
 
 		if cgs == g {
-
 			// notify channel a match was found at this index
 			ch <- i
-
 			i += 2
 		}
 	}
 }
 
-func (ds dna) findRemainingGenesFromIndex(idx int, gpm map[string]genePermutations) string {
-	return "hello from the other side"
+func (ds dna) findRemainingGenesFromIndex(i int, gps []string) string {
+
+	// dna length
+	l := len(ds)
+
+	// we already know the first nucleobase was found at [i][i+1][i+2] of the slice
+	fnbs := ds[i] + ds[i+1] + ds[i+2]
+
+	// so our path starts here
+	i += 3
+
+	// we have to find the following nucleobases:
+	snbs := gps[0]
+	fsn := false
+	tnbs := gps[1]
+	ftn := false
+
+	// till there we'll keep appending to the gs
+	for j:= i; j < l; j++ {
+
+		// add the [0] char
+		fnbs = fnbs + ds[j]
+
+		// needs at least more 2 chars to form a nucleobase
+		if j+2 >= l {
+			j++
+			continue
+		}
+
+		// comparable nocleobase
+		cnbs := ds[j] + ds[j+1] + ds[j+2]
+
+		// has found the second nucleobase
+		if cnbs == snbs {
+
+			// add the second nucleobase to the first nucleobase
+			fnbs = fnbs + ds[j+1] + ds[j+2]
+			fsn = true
+
+			// has found the second, third have been found already
+			if ftn {
+				return fnbs
+			}
+
+			j += 2
+			continue
+		}
+
+		// has found the third nucleobase
+		if cnbs == tnbs {
+
+			// add the third nucleobase to the first nucleobase
+			fnbs = fnbs + ds[j+1] + ds[j+2]
+			ftn = true
+
+			// has found the third, second have been found already
+			if fsn {
+				return fnbs
+			}
+
+			j += 2
+			continue
+		}
+	}
+
+	return "false"
 }
