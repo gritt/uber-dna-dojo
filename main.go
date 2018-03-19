@@ -25,8 +25,8 @@ func main() {
 	// genes map with their permutations
 	gm := map[string]genePermutations{
 		"ACT": genePermutations{"CGT", "AGT"},
-		"AGT": genePermutations{"CGT", "AGT"},
-		"CGT": genePermutations{"CGT", "AGT"},
+		"AGT": genePermutations{"CGT", "ACT"},
+		"CGT": genePermutations{"ACT", "AGT"},
 	}
 
 	// find shortest piece of matching genes
@@ -90,15 +90,15 @@ func (ds dna) findShortestOccurrence(gpm map[string]genePermutations) string {
 		}
 	}
 
-	fmt.Println(rsl)
+	if len(rsl) > 0 {
+		// sort slice of strings by length of each string
+		sort.Slice(rsl, func(j, k int) bool { return len(rsl[j]) < len(rsl[k]) })
 
-	//if len(rsl) > 0 {
-	//	sort.Strings(rsl)
-	//	return rsl[0]
-	//}
+		// return the first one, the shortest!
+		return rsl[0]
+	}
 
 	return ""
-
 }
 
 func (ds dna) findGeneOccurrenceIndexes(g string) []int {
@@ -109,7 +109,7 @@ func (ds dna) findGeneOccurrenceIndexes(g string) []int {
 	// indexes slice
 	var isl []int
 
-	for i := 0; i < l; i++ {
+	for i := 0; i <= l; i++ {
 
 		if (i + 2) >= l {
 			i++
