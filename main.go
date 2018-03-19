@@ -10,7 +10,6 @@ import (
 
 type dna []string
 type genePermutations []string
-type results []string
 
 func main() {
 
