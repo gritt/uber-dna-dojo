@@ -119,7 +119,6 @@ func (ds dna) findShortestOccurrence(gpm map[string]genePermutations) string {
 	return ""
 }
 
-//func (ds dna) findGeneOccurrenceIndexes(g string) []int {
 func (ds dna) findGeneOccurrenceIndexes(g string, gpsl []string, ci chan []int, cs chan []string) {
 
 	// dna length
@@ -151,7 +150,6 @@ func (ds dna) findGeneOccurrenceIndexes(g string, gpsl []string, ci chan []int, 
 	return
 }
 
-//func (ds dna) findRemainingGenesFromIndex(i int, gps []string, c chan string) string {
 func (ds dna) findRemainingGenesFromIndex(i int, gps []string, c chan string) {
 
 	// dna length
