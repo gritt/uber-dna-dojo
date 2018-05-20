@@ -60,17 +60,25 @@ func (ds dna) findShortestOccurrence(gpm map[string]genePermutations) string {
 	// to store results
 	var rsl []string
 
+
+	// channels to transport int and string of the first gene occurrences
+	ci := make(chan []int)
+	cs := make(chan []string)
+
+
 	// gs : ACT|AGT|CGT
 	// gpsl : {"CGT", "AGT"},{"CGT", "AGT"},{"CGT", "AGT"}
 	for gs, gpsl := range gpm {
 
-		// TODO: run search in a new routine
-		//go ds.findGeneOccurrenceIndexesConcurrent(gs, ch)
+		// search matching genes indexes in new routine
+		go ds.findGeneOccurrenceIndexes(gs, gpsl, ci, cs)
+	}
 
-		// TODO: listen for indexes, start a new search by the current gene from there
-		//i := <-ch
+	// wait for channel response till len(gpm) iterations
+	for a := 0; a < len(gpm); a++ {
 
-		isl := ds.findGeneOccurrenceIndexes(gs)
+		isl := <- ci
+		gpsl := <- cs
 
 		if len(isl) == 0 {
 			continue
@@ -80,10 +88,8 @@ func (ds dna) findShortestOccurrence(gpm map[string]genePermutations) string {
 		c := make(chan string)
 
 		for _, i := range isl {
-
+			// search remaining genes in new routine
 			go ds.findRemainingGenesFromIndex(i, gpsl, c)
-
-			//ps := ds.findRemainingGenesFromIndex(i, gpsl)
 		}
 
 
@@ -113,7 +119,8 @@ func (ds dna) findShortestOccurrence(gpm map[string]genePermutations) string {
 	return ""
 }
 
-func (ds dna) findGeneOccurrenceIndexes(g string) []int {
+//func (ds dna) findGeneOccurrenceIndexes(g string) []int {
+func (ds dna) findGeneOccurrenceIndexes(g string, gpsl []string, ci chan []int, cs chan []string) {
 
 	// dna length
 	l := len(ds)
@@ -139,29 +146,9 @@ func (ds dna) findGeneOccurrenceIndexes(g string) []int {
 		}
 	}
 
-	return isl
-}
-
-func (ds dna) findGeneOccurrenceIndexesConcurrent(g string, ch chan int) {
-
-	// dna length
-	dsl := len(ds)
-
-	for i := 0; i < dsl; i++ {
-
-		if (i + 2) >= dsl {
-			i++
-			continue
-		}
-
-		cgs := string(ds[i] + ds[i+1] + ds[i+2])
-
-		if cgs == g {
-			// notify channel a match was found at this index
-			ch <- i
-			i += 2
-		}
-	}
+	ci <- isl
+	cs <- gpsl
+	return
 }
 
 //func (ds dna) findRemainingGenesFromIndex(i int, gps []string, c chan string) string {
