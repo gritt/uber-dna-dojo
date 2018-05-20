@@ -107,6 +107,7 @@ func (ds dna) findShortestOccurrence(gpm map[string]genePermutations) string {
 	}
 
 	if len(rsl) > 0 {
+
 		// sort slice of strings by length of each string
 		sort.Slice(rsl, func(j, k int) bool {
 			return len(rsl[j]) < len(rsl[k])
@@ -193,7 +194,6 @@ func (ds dna) findRemainingGenesFromIndex(i int, gps []string, c chan string) {
 			if ftn {
 				c <- fnbs
 				return
-				//return fnbs
 			}
 
 			j += 2
@@ -211,7 +211,6 @@ func (ds dna) findRemainingGenesFromIndex(i int, gps []string, c chan string) {
 			if fsn {
 				c <- fnbs
 				return
-				//return fnbs
 			}
 
 			j += 2
@@ -220,6 +219,4 @@ func (ds dna) findRemainingGenesFromIndex(i int, gps []string, c chan string) {
 	}
 
 	c <- "false"
-	return
-	//return "false"
 }
