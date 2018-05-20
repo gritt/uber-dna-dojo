@@ -64,9 +64,6 @@ func (ds dna) findShortestOccurrence(gpm map[string]genePermutations) string {
 	// gpsl : {"CGT", "AGT"},{"CGT", "AGT"},{"CGT", "AGT"}
 	for gs, gpsl := range gpm {
 
-		// TODO: a channel to transport integers
-		//ch := make(chan int)
-
 		// TODO: run search in a new routine
 		//go ds.findGeneOccurrenceIndexesConcurrent(gs, ch)
 
@@ -79,9 +76,23 @@ func (ds dna) findShortestOccurrence(gpm map[string]genePermutations) string {
 			continue
 		}
 
+		// a channel to transport strings
+		c := make(chan string)
+
 		for _, i := range isl {
 
-			ps := ds.findRemainingGenesFromIndex(i, gpsl)
+			go ds.findRemainingGenesFromIndex(i, gpsl, c)
+
+			//ps := ds.findRemainingGenesFromIndex(i, gpsl)
+		}
+
+
+		// wait for channel response till len(isl) iterations
+		for j := 0; j < len(isl); j++ {
+
+			// capture response
+			// append correct ones to further be compared
+			ps := <- c
 
 			if ps != "false" {
 				rsl = append(rsl, ps)
@@ -91,7 +102,9 @@ func (ds dna) findShortestOccurrence(gpm map[string]genePermutations) string {
 
 	if len(rsl) > 0 {
 		// sort slice of strings by length of each string
-		sort.Slice(rsl, func(j, k int) bool { return len(rsl[j]) < len(rsl[k]) })
+		sort.Slice(rsl, func(j, k int) bool {
+			return len(rsl[j]) < len(rsl[k])
+		})
 
 		// return the first one, the shortest!
 		return rsl[0]
@@ -151,7 +164,8 @@ func (ds dna) findGeneOccurrenceIndexesConcurrent(g string, ch chan int) {
 	}
 }
 
-func (ds dna) findRemainingGenesFromIndex(i int, gps []string) string {
+//func (ds dna) findRemainingGenesFromIndex(i int, gps []string, c chan string) string {
+func (ds dna) findRemainingGenesFromIndex(i int, gps []string, c chan string) {
 
 	// dna length
 	l := len(ds)
@@ -192,7 +206,9 @@ func (ds dna) findRemainingGenesFromIndex(i int, gps []string) string {
 
 			// has found the second, third have been found already
 			if ftn {
-				return fnbs
+				c <- fnbs
+				return
+				//return fnbs
 			}
 
 			j += 2
@@ -208,7 +224,9 @@ func (ds dna) findRemainingGenesFromIndex(i int, gps []string) string {
 
 			// has found the third, second have been found already
 			if fsn {
-				return fnbs
+				c <- fnbs
+				return
+				//return fnbs
 			}
 
 			j += 2
@@ -216,5 +234,7 @@ func (ds dna) findRemainingGenesFromIndex(i int, gps []string) string {
 		}
 	}
 
-	return "false"
+	c <- "false"
+	return
+	//return "false"
 }
