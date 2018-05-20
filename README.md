@@ -34,6 +34,10 @@ Example 02:
     3. The array of results is sorter by length, and we print the first index, 
     which is the shortest one found;
 
+    Extra. It does it concurrently, using Go routines and channels implementation,
+    while it is not perceived for such small inputs (samples), it will do a big difference
+    when dealing with bigger texts;
+
 
 ## Graphical representation
     ..................CGT...AGT............ACT
